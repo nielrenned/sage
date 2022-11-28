@@ -2,6 +2,7 @@ from sage.structure.element import CommutativeRingElement
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 from sage.rings.padics.factory import Zq
 
+
 class WittVector_base(CommutativeRingElement):
     def __init__(self, parent, vec=None):
         self.prec = parent.precision()
@@ -34,7 +35,7 @@ class WittVector_base(CommutativeRingElement):
         C = self.__class__
         
         # As a slight optimization, we'll check for zero ahead of time.
-        # This has the benefit of allowing us to create polynomials, 
+        # This has the benefit of allowing us to create polynomials,
         # even if ``P._algorithm`` is 'none'.
         if other == P.zero():
             return self
@@ -111,7 +112,7 @@ class WittVector_base(CommutativeRingElement):
         # to (1, 0, 0, ...), and solve.
         var_names = [f'Y{i}' for i in range(1, self.prec)]
         poly_ring = PolynomialRing(P.base(), var_names)
-        inv_vec = list( (self.vec[0]**-1, ) + poly_ring.gens()) # We'll fill this in one-by-one
+        inv_vec = list((self.vec[0]**-1, ) + poly_ring.gens()) # We'll fill this in one-by-one
         
         # TODO: Remove the algorithm argument once other algs are implemented
         from sage.rings.padics.witt_ring_constructor import WittRing
@@ -124,13 +125,14 @@ class WittVector_base(CommutativeRingElement):
         
         return C(P, vec=inv_vec)
 
+
 class WittVector_p_typical(WittVector_base):
     def _add_(self, other):
         P = self.parent()
         C = self.__class__
         
         # As a slight optimization, we'll check for zero ahead of time.
-        # This has the benefit of allowing us to create polynomials, 
+        # This has the benefit of allowing us to create polynomials,
         # even if ``P._algorithm`` is 'none'.
         if other == P.zero():
             return self
@@ -210,13 +212,14 @@ class WittVector_p_typical(WittVector_base):
         else:
             return NotImplemented
 
+
 class WittVector_non_p_typical(WittVector_base):
     def _add_(self, other):
         P = self.parent()
         C = self.__class__
         
         # As a slight optimization, we'll check for zero ahead of time.
-        # This has the benefit of allowing us to create polynomials, 
+        # This has the benefit of allowing us to create polynomials,
         # even if ``P._algorithm`` is 'none'.
         if other == P.zero():
             return self
@@ -237,7 +240,7 @@ class WittVector_non_p_typical(WittVector_base):
             sum_vec = [x[0] + y[0]]
             for n in range(1, self.prec):
                 next_sum = x[n] + y[n] + \
-                    sum((x[i]**(p**(n-i)) + y[i]**(p**(n-i)) - sum_vec[i]**(p**(n-i))) / p**(n-i) \
+                    sum((x[i]**(p**(n-i)) + y[i]**(p**(n-i)) - sum_vec[i]**(p**(n-i))) / p**(n-i)
                         for i in range(0, n))
                 sum_vec.append(next_sum)
             
@@ -273,10 +276,10 @@ class WittVector_non_p_typical(WittVector_base):
             prod_vec = [x[0] * y[0]]
             for n in range(1, self.prec):
                 next_prod = (
-                        sum(p**i * x[i]**(p**(n-i)) for i in range(0, n+1)) * \
-                        sum(p**i * y[i]**(p**(n-i)) for i in range(0, n+1)) - \
-                        sum(p**i * prod_vec[i]**(p**(n-i)) for i in range(0, n))
-                    ) / p**n
+                    sum(p**i * x[i]**(p**(n-i)) for i in range(0, n+1)) *
+                    sum(p**i * y[i]**(p**(n-i)) for i in range(0, n+1)) -
+                    sum(p**i * prod_vec[i]**(p**(n-i)) for i in range(0, n))
+                ) / p**n
                 prod_vec.append(next_prod)
             
             return C(P, vec=prod_vec)
