@@ -6,7 +6,12 @@ from sage.rings.padics.witt_ring import WittRing_p_invertible
 from sage.rings.padics.witt_ring import WittRing_non_p_typical
 
 from sage.categories.commutative_rings import CommutativeRings
+from sage.rings.abc import IntegerModRing
 from sage.sets.primes import Primes
+from sage.rings.integer_ring import ZZ
+
+from sage.rings.finite_rings.finite_field_base import is_FiniteField
+
 _CommutativeRings = CommutativeRings()
 _Primes = Primes()
 
@@ -26,8 +31,10 @@ def WittRing(base_ring, prec=1, p=None, algorithm='auto'):
             raise ValueError(f'Cannot create Ring of Witt Vectors over {base_ring}: {base_ring} has non-prime characteristic and no prime was supplied.')
         else:
             prime = char
-    else:
+    elif p in _Primes:
         prime = p
+    else:
+        raise ValueError(f'Cannot create Ring of {p}-Witt Vectors: {p} is not a prime.')
     
     if algorithm is None:
         algorithm = 'none'
@@ -36,8 +43,12 @@ def WittRing(base_ring, prec=1, p=None, algorithm='auto'):
     
     if prime == char: # p-typical
         if base_ring.is_field() and base_ring.is_finite():
+            if not is_FiniteField(base_ring):
+                # This means we have something like Zmod(p)
+                base_ring = base_ring.field()
+            
             # TODO: document that this ignores the choice of algorithm
-            return WittRing_finite_field(base_ring.field(), prec, prime,
+            return WittRing_finite_field(base_ring, prec, prime,
                                          category=_CommutativeRings)
         else:
             if algorithm == 'auto':
