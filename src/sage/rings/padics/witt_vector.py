@@ -274,6 +274,7 @@ class WittVector_p_typical(WittVector_base):
 
 
 class WittVector_non_p_typical(WittVector_base):
+    
     def _add_(self, other):
         P = self.parent()
         C = self.__class__
@@ -305,6 +306,11 @@ class WittVector_non_p_typical(WittVector_base):
                 sum_vec.append(next_sum)
             
             return C(P, vec=sum_vec)
+        elif alg == 'IntegerMod_isomorphism':
+            a = P._vector_to_coefficients(self)
+            b = P._vector_to_coefficients(other)
+            sum_coeffs = tuple(a[i] + b[i] for i in range(self.prec))
+            return C(P, vec=P._coefficients_to_vector(sum_coeffs))
         else:
             return NotImplemented
     
@@ -343,5 +349,17 @@ class WittVector_non_p_typical(WittVector_base):
                 prod_vec.append(next_prod)
             
             return C(P, vec=prod_vec)
+        elif alg == 'IntegerMod_isomorphism':
+            p = P.prime
+            
+            a = P._vector_to_coefficients(self)
+            b = P._vector_to_coefficients(other)
+            
+            prod_coeffs = [a[0]*b[0]]
+            for i in range(1, self.prec):
+                c_i = a[0]*b[i] + a[i]*b[0] + p**i * a[i]*b[i]
+                prod_coeffs.append(c_i)
+            
+            return C(P, vec=P._coefficients_to_vector(prod_coeffs))
         else:
             return NotImplemented

@@ -1,5 +1,6 @@
 from sage.rings.ring import CommutativeRing
 from sage.rings.integer_ring import ZZ
+from sage.rings.finite_rings.integer_mod_ring import Zmod
 from sage.categories.commutative_rings import CommutativeRings
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
@@ -61,22 +62,15 @@ class WittRing_base(CommutativeRing, UniqueRepresentation):
     def _int_to_vector(self, k):
         p = self.prime
         
-        should_negate = False
-        if k < 0:
-            k = -k
-            should_negate = True
+        char = self.characteristic()
+        if char != 0:
+            k = k % char
         
         vec_k = [k]
         for n in range(1, self.prec):
             total = k - k**(p**n) - sum(p**(n-i) * vec_k[n-i]**(p**i) for i in range(1, n))
             total //= p**n
             vec_k.append(total)
-        
-        if should_negate:
-            if p == 2:
-                return NotImplemented
-            else:
-                vec_k = [-x for x in vec_k]
         
         return vec_k
     
@@ -310,6 +304,62 @@ class WittRing_non_p_typical(WittRing_base):
     
     def _repr_(self):
         return f"Ring of {self.prime}-Witt Vectors of length {self.prec} over {self.base()}"
+
+
+class WittRing_integers_mod_power_of_p(WittRing_non_p_typical):
+    def __init__(self, base_ring, prec, prime, category=None):
+        self.alpha = ZZ.valuation(prime)(base_ring.characteristic())
+        WittRing_base.__init__(self, base_ring, prec, prime,
+                               algorithm='IntegerMod_isomorphism',
+                               category=category)
+    
+    def _coefficients_to_vector(self, c):
+        p = self.prime
+        n = self.prec
+        alpha = self.alpha
+        
+        B = self.base()
+        R = Zmod(p**(alpha+n-1))
+        
+        v = []
+        for i in range(n-1):
+            # It may appear that we can simplify the computations below
+            # by canceling common factors in the multiplication and
+            # division. However, since the first computations are done in
+            # R and then we switch to ZZ, this cancellation doesn't work.
+            v_i = R(c[0]) + p**(i+1)*R(c[i+1])
+            v_i -= sum(p**j * R(v[j])**(p**(i-j)) for j in range(i))
+            v_i *= p**(n-i-1)
+            v_i = ZZ(v_i) // p**(n-1)
+            v.append(B(v_i))
+        
+        last_v = R(c[0]) - sum(p**j * R(v[j])**(p**(n-j-1)) for j in range(n-1))
+        last_v = ZZ(last_v) // p**(n-1)
+        v.append(B(last_v))
+        
+        return tuple(v)
+    
+    def _vector_to_coefficients(self, v):
+        p = self.prime
+        n = self.prec
+        alpha = self.alpha
+        
+        R = Zmod(p**(alpha+n-1))
+        S = Zmod(p**(alpha-1))
+        
+        c0 = sum(p**j * R(v.vec[j])**(p**(n-j-1)) for j in range(n))
+        c = [c0]
+        for i in range(1, n):
+            # It may appear that we can simplify the computations below
+            # by canceling common factors in the multiplication and
+            # division. However, since the first computations are done in
+            # R and then we switch to ZZ, this cancellation doesn't work.
+            c_i = sum(p**j * R(v.vec[j])**(p**(i-j-1)) for j in range(i)) - c0
+            c_i *= p**(n-i)
+            c_i = ZZ(c_i) // p**n
+            c.append(S(c_i))
+        
+        return tuple(c)
 
 
 class WittRing_p_invertible(WittRing_non_p_typical):

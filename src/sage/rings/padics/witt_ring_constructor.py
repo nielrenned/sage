@@ -4,6 +4,7 @@ from sage.rings.padics.witt_ring import WittRing_p_typical
 from sage.rings.padics.witt_ring import WittRing_finite_field
 from sage.rings.padics.witt_ring import WittRing_p_invertible
 from sage.rings.padics.witt_ring import WittRing_non_p_typical
+from sage.rings.padics.witt_ring import WittRing_integers_mod_power_of_p
 
 from sage.categories.commutative_rings import CommutativeRings
 from sage.rings.abc import IntegerModRing
@@ -63,6 +64,14 @@ def WittRing(base_ring, prec=1, p=None, algorithm='auto'):
             # TODO: document that this ignores the choice of algorithm
             return WittRing_p_invertible(base_ring, prec, prime,
                                          category=_CommutativeRings)
+        elif (
+            isinstance(base_ring, IntegerModRing) and \
+            p**(ZZ.valuation(p)(char)) == char
+        ):
+            return WittRing_integers_mod_power_of_p(
+                base_ring, prec, prime,
+                category=_CommutativeRings
+            )
         else:
             if algorithm == 'auto':
                 algorithm = 'standard'
