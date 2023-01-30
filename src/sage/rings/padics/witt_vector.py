@@ -1,7 +1,68 @@
 from sage.structure.element import CommutativeRingElement
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 from sage.rings.padics.factory import Zq
+from sage.rings.integer_ring import ZZ
 
+from sage.rings.polynomial.multi_polynomial import is_MPolynomial
+from sage.rings.polynomial.polynomial_element import is_Polynomial
+
+from sage.sets.primes import Primes
+_Primes = Primes()
+
+def _fast_char_p_power(x, n, p=None):
+    r"""
+    Raise x^n power in characteristic p
+    
+    If x is not an element of a ring of characteristic p, throw an error.
+    If x is an element of GF(p^k), this is already fast.
+    However, is x is a polynomial, this seems to be slow?
+    """
+    if n not in ZZ:
+        raise ValueError(f'Exponent {n} is not an integer')
+    if n == 0 or x == 1:
+        return x.parent().one()
+    if x.parent().characteristic() not in _Primes:
+        raise ValueError(f'{x} is not in a ring of prime characteristic')
+    
+    x_is_Polynomial = is_Polynomial(x)
+    x_is_MPolynomial = is_MPolynomial(x)
+    
+    if not (x_is_Polynomial or x_is_MPolynomial):
+        return x**n
+    if (x_is_Polynomial and x.is_gen()) or (x_is_MPolynomial and x.is_generator()):
+        return x**n
+    if n < 0:
+        x = x**-1  # This may throw an error.
+        n = -n
+    
+    P = x.parent()
+    if p is None:
+        p = P.characteristic()
+    base_p_digits = ZZ(n).digits(base=p)
+    
+    x_to_the_n = 1
+    
+    for p_exp, digit in enumerate(base_p_digits):
+        if digit == 0:
+            continue
+        inner_term = x**digit
+        term_dict = {}
+        for e_int_or_tuple, c in inner_term.dict().items():
+            power = p**p_exp
+            new_c = _fast_char_p_power(c, power)
+            new_e_tuple = None
+            if x_is_Polynomial:  # Then the dict keys are ints
+                new_e_tuple = e_int_or_tuple * power
+            elif x_is_MPolynomial:  # Then the dict keys are ETuples
+                new_e_tuple = e_int_or_tuple.emul(power)
+            term_dict[new_e_tuple] = new_c
+        term = P(term_dict)
+        x_to_the_n *= term
+    
+    return x_to_the_n
+
+
+_fcppow = _fast_char_p_power
 
 class WittVector_base(CommutativeRingElement):
     def __init__(self, parent, vec=None):
@@ -114,7 +175,6 @@ class WittVector_base(CommutativeRingElement):
         poly_ring = PolynomialRing(P.base(), var_names)
         inv_vec = list((self.vec[0]**-1, ) + poly_ring.gens()) # We'll fill this in one-by-one
         
-        # TODO: Remove the algorithm argument once other algs are implemented
         from sage.rings.padics.witt_ring_constructor import WittRing
         W = WittRing(poly_ring, p=P.prime, prec=P.prec)
         prod_vec = (W(self.vec)*W(inv_vec)).vec
