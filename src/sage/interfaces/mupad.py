@@ -147,7 +147,7 @@ class Mupad(ExtraTabCompletion, Expect):
         """
         EXAMPLES::
 
-            sage: mupad.__reduce__()
+            sage: Mupad().__reduce__()
             (<function reduce_load_mupad at 0x...>, ())
 
         """
@@ -690,4 +690,3 @@ def __doctest_cleanup():
     """
     import sage.interfaces.quit
     sage.interfaces.quit.expect_quitall()
-

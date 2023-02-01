@@ -258,7 +258,7 @@ class Berkovich_Cp(Berkovich):
             sage: B != C
             False
         """
-        return not(self == right)
+        return not (self == right)
 
     def __hash__(self):
         """
@@ -474,7 +474,7 @@ class Berkovich_Cp_Affine(Berkovich_Cp):
             return "Affine Berkovich line over Cp(%s) of precision %s" %(self.prime(),\
                 self.base().precision_cap())
         else:
-            return  "Affine Berkovich line over Cp(%s), with base %s" %(self.prime(),\
+            return "Affine Berkovich line over Cp(%s), with base %s" %(self.prime(),\
                 self.base())
 
     def _latex_(self):
@@ -647,11 +647,11 @@ class Berkovich_Cp_Projective(Berkovich_Cp):
             ideal = None
             self._base_type = 'padic field'
         if base.dimension_relative() != 1:
-            raise ValueError("base of projective Berkovich space must be " + \
+            raise ValueError("base of projective Berkovich space must be "
                 "projective space of dimension 1 over Qp or a number field")
         self._p = prime
         self._ideal = ideal
-        Parent.__init__(self, base = base, category=TopologicalSpaces())
+        Parent.__init__(self, base=base, category=TopologicalSpaces())
 
     def base_ring(self):
         r"""
@@ -704,7 +704,7 @@ class Berkovich_Cp_Projective(Berkovich_Cp):
             return "Projective Berkovich line over Cp(%s) of precision %s" %(self.prime(),\
                 self.base().base_ring().precision_cap())
         else:
-            return  "Projective Berkovich line over Cp(%s), with base %s" %(self.prime(),\
+            return "Projective Berkovich line over Cp(%s), with base %s" %(self.prime(),\
                 self.base().base_ring())
 
     def _latex_(self):

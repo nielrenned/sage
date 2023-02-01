@@ -98,8 +98,10 @@ def _normalize_padic_lseries(self, p, normalize, implementation, precision):
         raise ValueError("Implementation should be one of  'sage', 'eclib', 'num' or 'pollackstevens'")
     return (p, normalize, implementation, precision)
 
+
 @cached_method(key=_normalize_padic_lseries)
-def padic_lseries(self, p, normalize = None, implementation = 'eclib', precision = None):
+def padic_lseries(self, p, normalize=None, implementation='eclib',
+                  precision=None):
     r"""
     Return the `p`-adic `L`-series of self at
     `p`, which is an object whose approx method computes
@@ -176,10 +178,10 @@ def padic_lseries(self, p, normalize = None, implementation = 'eclib', precision
         sage: L = e.padic_lseries(3, implementation = 'sage')
         sage: L.series(5,prec=10)
         2 + 3 + 3^2 + 2*3^3 + 2*3^5 + 3^6 + O(3^7) + (1 + 3 + 2*3^2 + 3^3 + O(3^4))*T + (1 + 2*3 + O(3^4))*T^2 + (3 + 2*3^2 + O(3^3))*T^3 + (2*3 + 3^2 + O(3^3))*T^4 + (2 + 2*3 + 2*3^2 + O(3^3))*T^5 + (1 + 3^2 + O(3^3))*T^6 + (2 + 3^2 + O(3^3))*T^7 + (2 + 2*3 + 2*3^2 + O(3^3))*T^8 + (2 + O(3^2))*T^9 + O(T^10)
-        
+
     Also the numerical modular symbols can be used.
-    This may allow for much larger conductor in some instances::   
-    
+    This may allow for much larger conductor in some instances::
+
         sage: E = EllipticCurve([101,103])
         sage: L = E.padic_lseries(5, implementation="num")
         sage: L.series(2)
@@ -209,16 +211,16 @@ def padic_lseries(self, p, normalize = None, implementation = 'eclib', precision
     if implementation in ['sage', 'eclib', 'num']:
         if self.ap(p) % p != 0:
             Lp = plseries.pAdicLseriesOrdinary(self, p,
-                                  normalize = normalize, implementation = implementation)
+                                  normalize=normalize, implementation=implementation)
         else:
             Lp = plseries.pAdicLseriesSupersingular(self, p,
-                                  normalize = normalize, implementation = implementation)
+                                  normalize=normalize, implementation=implementation)
     else:
         phi = self.pollack_stevens_modular_symbol(sign=0)
         if phi.parent().level() % p == 0:
-            Phi = phi.lift(p, precision, eigensymbol = True)
+            Phi = phi.lift(p, precision, eigensymbol=True)
         else:
-            Phi = phi.p_stabilize_and_lift(p, precision, eigensymbol = True)
+            Phi = phi.p_stabilize_and_lift(p, precision, eigensymbol=True)
         Lp = Phi.padic_lseries()  #mm TODO should this pass precision on too ?
         Lp._cinf = self.real_components()
     return Lp
@@ -1476,7 +1478,7 @@ def padic_E2(self, p, prec=20, check=False, check_hypotheses=True, algorithm="au
     if self.conductor() % p == 0:
         if not self.conductor() % (p**2) == 0:
             eq = self.tate_curve(p)
-            return  eq.E2(prec=prec)
+            return eq.E2(prec=prec)
 
     X = self.minimal_model().short_weierstrass_model()
     frob_p = X.matrix_of_frobenius(p, prec, check, check_hypotheses, algorithm).change_ring(Integers(p**prec))

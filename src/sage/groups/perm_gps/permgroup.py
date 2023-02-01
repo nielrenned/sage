@@ -135,15 +135,14 @@ REFERENCES:
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
-
+from __future__ import annotations
 from functools import wraps
 
 from sage.misc.randstate import current_randstate
 from sage.groups.group import FiniteGroup
 
 from sage.rings.all import QQ, Integer
-from sage.interfaces.expect import is_ExpectElement
-from sage.interfaces.gap import GapElement
+from sage.interfaces.abc import ExpectElement, GapElement
 from sage.libs.gap.libgap import libgap
 from sage.libs.gap.element import GapElement as LibGapElement
 from sage.groups.perm_gps.permgroup_element import PermutationGroupElement
@@ -385,7 +384,7 @@ def PermutationGroup(gens=None, *args, **kwds):
         See https://trac.sagemath.org/31510 for details.
 
     """
-    if not is_ExpectElement(gens) and hasattr(gens, '_permgroup_'):
+    if not isinstance(gens, ExpectElement) and hasattr(gens, '_permgroup_'):
         return gens._permgroup_()
     if gens is not None and not isinstance(gens, (tuple, list, GapElement)):
         raise TypeError("gens must be a tuple, list, or GapElement")
@@ -492,7 +491,7 @@ class PermutationGroup_generic(FiniteGroup):
         if isinstance(gap_group, LibGapElement):
             self._libgap = gap_group
 
-        #Handle the case where only the GAP group is specified.
+        # Handle the case where only the GAP group is specified.
         if gens is None:
             gens = [gen for gen in gap_group.GeneratorsOfGroup()]
 
@@ -509,9 +508,9 @@ class PermutationGroup_generic(FiniteGroup):
                 # Fallback (not ideal: find a better solution?)
                 domain = sorted(domain, key=str)
 
-            #Here we need to check if all of the points are integers
-            #to make the domain contain all integers up to the max.
-            #This is needed for backward compatibility
+            # Here we need to check if all of the points are integers
+            # to make the domain contain all integers up to the max.
+            # This is needed for backward compatibility
             if all(isinstance(p, (int, Integer)) for p in domain):
                 domain = list(range(min([1] + domain), max([1] + domain)+1))
 
@@ -1237,9 +1236,11 @@ class PermutationGroup_generic(FiniteGroup):
         else:
             raise ValueError("the input algorithm (='%s') must be 'SGS', 'BFS' or 'DFS'" % algorithm)
 
-    def gens(self):
+    def gens(self) -> tuple:
         """
-        Return tuple of generators of this group. These need not be
+        Return tuple of generators of this group.
+
+        These need not be
         minimal, as they are the generators used in defining this group.
 
         EXAMPLES::
@@ -1270,14 +1271,14 @@ class PermutationGroup_generic(FiniteGroup):
         We make sure that the trivial group gets handled correctly::
 
             sage: SymmetricGroup(1).gens()
-            [()]
+            ((),)
         """
         return self._gens
-
 
     def gens_small(self):
         """
         For this group, returns a generating set which has few elements.
+
         As neither irredundancy nor minimal length is proven, it is fast.
 
         EXAMPLES::
@@ -2795,7 +2796,7 @@ class PermutationGroup_generic(FiniteGroup):
             from sage.categories.finite_permutation_groups import FinitePermutationGroups
             if N not in FinitePermutationGroups():
                 raise TypeError("{0} is not a permutation group".format(N))
-            if not PermutationGroup(gens = mapping[0]) == self:
+            if not PermutationGroup(gens=mapping[0]) == self:
                 msg = 'the generator list must generate the calling group, {0} does not generate {1}'
                 raise ValueError(msg.format(mapping[0], self._repr_()))
             if len(mapping[0]) != len(mapping[1]):
@@ -3173,7 +3174,7 @@ class PermutationGroup_generic(FiniteGroup):
             return PermutationGroup(gap_group=gap_group)
 
     @hap_decorator
-    def cohomology(self, n, p = 0):
+    def cohomology(self, n, p=0):
         r"""
         Computes the group cohomology `H^n(G, F)`, where `F = \ZZ`
         if `p=0` and `F = \ZZ / p \ZZ` if `p > 0` is a prime.
@@ -3222,7 +3223,7 @@ class PermutationGroup_generic(FiniteGroup):
         return AbelianGroup(len(L), L)
 
     @hap_decorator
-    def cohomology_part(self, n, p = 0):
+    def cohomology_part(self, n, p=0):
         r"""
         Compute the p-part of the group cohomology `H^n(G, F)`,
         where `F = \ZZ` if `p=0` and `F = \ZZ / p \ZZ` if
@@ -3258,7 +3259,7 @@ class PermutationGroup_generic(FiniteGroup):
             return AbelianGroup(len(L), L)
 
     @hap_decorator
-    def homology(self, n, p = 0):
+    def homology(self, n, p=0):
         r"""
         Computes the group homology `H_n(G, F)`, where
         `F = \ZZ` if `p=0` and `F = \ZZ / p \ZZ` if
@@ -3306,7 +3307,7 @@ class PermutationGroup_generic(FiniteGroup):
         return AbelianGroup(len(L), L)
 
     @hap_decorator
-    def homology_part(self, n, p = 0):
+    def homology_part(self, n, p=0):
         r"""
         Computes the `p`-part of the group homology
         `H_n(G, F)`, where `F = \ZZ` if `p=0` and
@@ -3358,8 +3359,7 @@ class PermutationGroup_generic(FiniteGroup):
             sage: G = PermutationGroup([[(1,2),(3,4)], [(1,2,3)]])
             sage: CT = gap(G).CharacterTable()
 
-        Type ``print(gap.eval("Display(%s)"%CT.name()))`` to display this
-        nicely.
+        Type ``CT.Display()`` to display this nicely.
 
         ::
 
@@ -3374,8 +3374,7 @@ class PermutationGroup_generic(FiniteGroup):
             [ 2  0  0  0 -2]
             sage: CT = gap(G).CharacterTable()
 
-        Again, type ``print(gap.eval("Display(%s)"%CT.name()))`` to display this
-        nicely.
+        Again, type ``CT.Display()`` to display this nicely.
 
         ::
 
@@ -3630,7 +3629,7 @@ class PermutationGroup_generic(FiniteGroup):
         return C
 
     @cached_method
-    def has_regular_subgroup(self, return_group = False):
+    def has_regular_subgroup(self, return_group=False):
         r"""
         Return whether the group contains a regular subgroup.
 
@@ -3670,12 +3669,10 @@ class PermutationGroup_generic(FiniteGroup):
                 b = (C is not None)
                 if b and return_group:
                     G = self.subgroup(gap_group=C.Representative())
-        if return_group:
-            return G
-        else:
-            return b
 
-    def blocks_all(self, representatives = True):
+        return G if return_group else b
+
+    def blocks_all(self, representatives=True):
         r"""
         Return the list of block systems of imprimitivity.
 
@@ -4668,17 +4665,23 @@ class PermutationGroup_generic(FiniteGroup):
             sage: G = PermutationGroup([[(2,)]])
             sage: G.molien_series()
             1/(x^2 - 2*x + 1)
+
+        TESTS:
+
+        Check that :trac:`34854` is fixed::
+
+            sage: PG = PermutationGroup(["(1,2,3,4,5,6,7)","(5,6,7)"])
+            sage: PG.molien_series()
+            (-x^18 + x^15 - x^12 + x^9 - x^6 + x^3 - 1)/(x^25 - x^24 - x^23 - x^22 + x^21 + 2*x^20 + x^19 - x^17 - x^16 - x^15 - x^13 + x^12 + x^10 + x^9 + x^8 - x^6 - 2*x^5 - x^4 + x^3 + x^2 + x - 1)
+
+        and 2 extra fixed points are correctly accounted for::
+
+            sage: PG1 = PermutationGroup(["(9,2,3,4,5,6,7)","(5,6,7)"])
+            sage: R.<x> = QQ[]
+            sage: PG.molien_series() == PG1.molien_series()*(1-x)^2
+            True
         """
-        pi = self._libgap_().NaturalCharacter()
-        # because NaturalCharacter forgets about fixed points:
-        pi += self._libgap_().TrivialCharacter() * len(self.fixed_points())
-
-        # TODO: pi is a Character from a CharacterTable on self, however libgap
-        # does not know about this type and when adding two Characters just
-        # returns a plain List; this needs to be fixed on the libgap side but
-        # in the meantime we can fix by converting pi back to the right type
-        pi = libgap.VirtualCharacter(self._libgap_().CharacterTable(), pi)
-
+        pi = self._libgap_().PermutationCharacter(list(self.domain()),libgap.OnPoints)
         M = pi.MolienSeries()
 
         R = QQ['x']

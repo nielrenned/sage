@@ -104,7 +104,7 @@ class generic_character(SFA_generic):
         """
         if sexpr == 0:
             return self(0)
-        if sexpr.support() == [[]]:
+        if list(sexpr.support()) == [[]]:
             return self._from_dict({self.one_basis(): sexpr.coefficient([])},
                                    remove_zeros=False)
         out = self.zero()
@@ -201,6 +201,7 @@ class induced_trivial_character_basis(generic_character):
 
         sage: TestSuite(ht).run()
     """
+
     def __init__(self, Sym, pfix):
         r"""
         Initialize the basis and register coercions.
@@ -424,6 +425,7 @@ class irreducible_character_basis(generic_character):
 
         sage: TestSuite(st).run()
     """
+
     def __init__(self, Sym, pfix):
         r"""
         Initialize the basis and register coercions.

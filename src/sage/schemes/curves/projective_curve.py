@@ -434,9 +434,9 @@ class ProjectiveCurve(Curve_generic, AlgebraicScheme_subscheme_projective):
                 l = list(PP.gens())
                 for i in range(n + 1):
                     l[i] = 0
-                    while(F(l) == 0):
-                        l[i] = l[i] + 1
-                Q = PP(l) # will be a point not on the curve
+                    while F(l) == 0:
+                        l[i] += 1
+                Q = PP(l)  # will be a point not on the curve
             else:
                 # if the base ring is a finite field, iterate over all points in the ambient space and check which
                 # are on this curve
@@ -703,7 +703,7 @@ class ProjectivePlaneCurve(ProjectiveCurve):
         y0 = F(pt[1])
         astr = ["a"+str(i) for i in range(1,2*n)]
         x,y = R.gens()
-        R0 = PolynomialRing(F,2*n+2,names = [str(x),str(y),"t"]+astr)
+        R0 = PolynomialRing(F, 2 * n + 2, names=[str(x), str(y), "t"] + astr)
         vars0 = R0.gens()
         t = vars0[2]
         yt = y0*t**0 + add([vars0[i]*t**(i-2) for i in range(3,2*n+2)])
@@ -1893,20 +1893,20 @@ class ProjectivePlaneCurve_finite_field(ProjectivePlaneCurve_field):
         g10 = R(g(X,one,zero))
         if g10.is_zero():
             for x in K:
-                yield(self.point([x,one,zero]))
+                yield self.point([x, one, zero])
         else:
             for x in g10.roots(multiplicities=False):
-                yield(self.point([x,one,zero]))
+                yield self.point([x, one, zero])
 
         # points with Z = 1
         for y in K:
             gy1 = R(g(X,y,one))
             if gy1.is_zero():
                 for x in K:
-                    yield(self.point([x,y,one]))
+                    yield self.point([x, y, one])
             else:
                 for x in gy1.roots(multiplicities=False):
-                    yield(self.point([x,y,one]))
+                    yield self.point([x, y, one])
 
     def _points_via_singular(self, sort=True):
         r"""
@@ -2147,8 +2147,8 @@ class ProjectivePlaneCurve_finite_field(ProjectivePlaneCurve_field):
         if algorithm == "bn":
             return self._points_via_singular(sort=sort)
         elif algorithm == "all":
-            S_enum = self.rational_points(algorithm = "enum")
-            S_bn = self.rational_points(algorithm = "bn")
+            S_enum = self.rational_points(algorithm="enum")
+            S_bn = self.rational_points(algorithm="bn")
             if S_enum != S_bn:
                 raise RuntimeError("Bug in rational_points -- different\
                                      algorithms give different answers for\

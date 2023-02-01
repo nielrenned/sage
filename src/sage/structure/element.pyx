@@ -946,7 +946,7 @@ cdef class Element(SageObject):
         """
         Use this method to implement ``self`` acting on ``x``.
 
-        Return None or raise a CoercionException if no
+        Return ``None`` or raise a ``CoercionException`` if no
         such action is defined here.
         """
         return None
@@ -955,15 +955,14 @@ cdef class Element(SageObject):
         """
         Use this method to implement ``self`` acted on by x.
 
-        Return None or raise a CoercionException if no
+        Return ``None`` or raise a ``CoercionException`` if no
         such action is defined here.
         """
         return None
 
-
     def __xor__(self, right):
-        raise RuntimeError("Use ** for exponentiation, not '^', which means xor\n"+\
-              "in Python, and has the wrong precedence.")
+        raise RuntimeError("Use ** for exponentiation, not '^', which means xor\n"
+                           "in Python, and has the wrong precedence.")
 
     def __pos__(self):
         return self
@@ -2615,7 +2614,10 @@ cdef class MultiplicativeGroupElement(MonoidElement):
 
     def __invert__(self):
         r"""
-        Return the inverse of ``self``.
+        Return the multiplicative inverse of ``self``.
+
+        This may cause infinite recursion because of the default definition
+        of division using inversion in ``_div_``.
         """
         return self._parent.one() / self
 
@@ -2625,6 +2627,7 @@ def is_RingElement(x):
     Return ``True`` if x is of type RingElement.
     """
     return isinstance(x, RingElement)
+
 
 cdef class RingElement(ModuleElement):
     cpdef _mul_(self, other):
