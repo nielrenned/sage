@@ -306,6 +306,24 @@ class WittRing_non_p_typical(WittRing_base):
         return f"Ring of {self.prime}-Witt Vectors of length {self.prec} over {self.base()}"
 
 
+class WittRing_integers(WittRing_non_p_typical):
+    def __init__(self, prec, prime, category=None):
+        WittRing_base.__init__(self, ZZ, prec, prime,
+                               algorithm='ghost_map_isomorphism',
+                               category=category)
+    
+    def _coefficients_to_vector(self, c):
+        p = self.prime
+        v = []
+        for n in range(self.prec):
+            v.append((c[n] - sum(p**i *v[i]**(p**(n-i)) for i in range(n))) / p**n)
+        return v
+    
+    def _vector_to_coefficients(self, v):
+        p = self.prime
+        return tuple(sum(p**i * v.vec[i]**(p**(n-i)) for i in range(n+1)) for n in range(self.prec))
+
+
 class WittRing_integers_mod_power_of_p(WittRing_non_p_typical):
     def __init__(self, base_ring, prec, prime, category=None):
         self.alpha = ZZ.valuation(prime)(base_ring.characteristic())

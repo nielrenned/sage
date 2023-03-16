@@ -306,7 +306,7 @@ class WittVector_non_p_typical(WittVector_base):
                 sum_vec.append(next_sum)
             
             return C(P, vec=sum_vec)
-        elif alg == 'IntegerMod_isomorphism':
+        elif alg == 'IntegerMod_isomorphism' or alg == 'ghost_map_isomorphism':
             a = P._vector_to_coefficients(self)
             b = P._vector_to_coefficients(other)
             sum_coeffs = tuple(a[i] + b[i] for i in range(self.prec))
@@ -360,6 +360,11 @@ class WittVector_non_p_typical(WittVector_base):
                 c_i = a[0]*b[i] + a[i]*b[0] + p**i * a[i]*b[i]
                 prod_coeffs.append(c_i)
             
+            return C(P, vec=P._coefficients_to_vector(prod_coeffs))
+        elif alg == 'ghost_map_isomorphism':
+            a = P._vector_to_coefficients(self)
+            b = P._vector_to_coefficients(other)
+            prod_coeffs = tuple(a[i] * b[i] for i in range(self.prec))
             return C(P, vec=P._coefficients_to_vector(prod_coeffs))
         else:
             return NotImplemented
